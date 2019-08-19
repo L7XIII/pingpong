@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ping Pong</title>
+    <script src="p5.min.js"></script>
+    <script src="p5.collide2d.min.js"></script>
+    <style>
+    body{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 90vh;
+    }
+    </style>
+</head>
+<body>
+    <script>
+        let Cwidth = 640;
+        let Cheight = 360;
+        function setup(){
+            createCanvas(Cwidth, Cheight);
+        }
+
+        class Player{
+            constructor(nth, width, height){
+                this._points = 0;
+                this._x = (nth) ? Cwidth - 30 : 20;
+                this._y = Cheight/2 - height/2;
+                this._w = width;
+                this._h = height;
+            }
+
+            get id(){
+                return this._id;
+            }
+            get name(){
+                return this._name;
+            }
+            get points(){
+                return this._points;
+            }
+            get x(){
+                return this._x;
+            }
+            get y(){
+                return this._y;
+            }
+            get w(){
+                return this._w;
+            }
+            get h(){
+                return this._h;
+            }
+
+            set y(y){
+                this._y = y; 
+            }
+            set points(_){
+                this._points++;
+            }
+
+            move(y){
+                if(this.y + y >= 0 && this.y + y <= Cheight - this.h) this.y += y;
+            }
+            draw(){
+                rect(this.x, this.y, this.w, this.h);
+            }
+        }
+
+        class Ball{
+            constructor(size, forceX, forceY){
+                this._x = Cwidth/2;
+                this._y = Cheight/2;
+                this._size = size;
+                this._forceX = forceX;
+                this._forceY = forceY;
+            }
+
+            get x(){
+                return this._x;
+            }
+            get y(){
+                return this._y;
+            }
+            get size(){
+                return this._size;
+            }
+            get forceX(){
+                return this._forceX;
+            }
+            get forceY(){
+                return this._forceY;
+            }
+
+            set x(x){
+                this._x = x;
+            }
+            set y(y){
+                this._y = y;
+            }
+            set forceX(forceX){
+                this._forceX = forceX;
+            }
+            set forceY(forceY){
+                this._forceY = forceY;
+            }
+
+            draw(){
+                circle(this.x, this.y, this.size);
+            }
+            move(){
+                //walls collision
+                if(this.x + this.forceX < Cwidth - this.size/2 && this.x + this.forceX > this.size/2){
+                    this.x += this.forceX;
+                } else {
+                    this.forceX = -this.forceX;
+                }
+                if(this.y + this.forceY < Cheight - this.size/2 && this.y + this.forceY > this.size/2){
+                    this.y += this.forceY;
+                } else {
+                    this.forceY = -this.forceY;
+                }
+
+                //player collision p5collide
+                if(collideRectCircle(p1.x, p1.y, p1.w, p1.h, this.x, this.y, this.size)){
+                    this.forceX = -this.forceX;
+                    this.forceY = random() * 2 * this.forceY;
+                    this.forceX += this.forceX / 10;
+                    this.forceY += this.forceY / 10;
+                }
+                if(collideRectCircle(p2.x, p2.y, p2.w, p2.h, this.x, this.y, this.size)){
+                    this.forceX = -this.forceX;
+                    this.forceY = random() * 2 * this.forceY;
+                    this.forceX += this.forceX / 10;
+                    this.forceY += this.forceY / 10;
+                }
+
+                //points
+                if(this.x + this.forceX >= Cwidth - 20 - p2.w){
+                    this.reset(-1);
+                    p1.points++;
+                }
+                if(this.x + this.forceX <= 20 + p1.w){
+                    this.reset(1);
+                    p2.points++;
+                }
+            }
+            reset(s){
+                this.x = Cwidth / 2;
+                this.y = Cheight / 2;
+                this.forceX = (random()*2+1)*s;
+                this.forceY = (random()*2+1)*s;
+            }
+        }
+
+        let p1 = new Player(0, 10, 100);
+        let p2 = new Player(1, 10, 100);
+        let ball = new Ball(20, 1, 1);
+
+        function draw(){
+            background(0);
+            stroke(255);
+            fill(255);
+
+            line(Cwidth/2, 0, Cwidth/2, Cheight);
+
+            p1.draw();
+            p2.draw();
+
+            textSize(36);
+            text(p1.points, Cwidth/2-30, 36);
+            text(p2.points, Cwidth/2+10, 36);
+
+            if(keyIsDown(UP_ARROW)) p2.move(-2);
+            if(keyIsDown(DOWN_ARROW)) p2.move(2);
+            if(keyIsDown(87)) p1.move(-2);
+            if(keyIsDown(83)) p1.move(2);
+
+            ball.draw();
+            ball.move();
+        }
+    </script>
+</body>
+</html>
